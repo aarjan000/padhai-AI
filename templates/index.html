@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="eng">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padhai AI — AI Quiz Maker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Nunito:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --board: #1F3D2E;
+            --board-dark: #15271A;
+            --chalk: #F5F2E8;
+            --chalk-dim: rgba(245, 242, 232, 0.6);
+            --yellow: #F2C94C;
+            --mint: #6FCF97;
+            --pink: #E8707C;
+            --rule: rgba(245, 242, 232, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at top, var(--board) 0%, var(--board-dark) 100%);
+            color: var(--chalk);
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .slate {
+            width: 100%;
+            max-width: 560px;
+        }
+
+        h1 {
+            font-family: 'Caveat', cursive;
+            font-size: 3rem;
+            margin: 0 0 2px;
+            font-weight: 700;
+        }
+
+        .tagline {
+            color: var(--chalk-dim);
+            margin: 0 0 24px;
+            font-size: 1rem;
+        }
+
+        .card {
+            border: 2px dashed var(--rule);
+            border-radius: 14px;
+            padding: 26px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.92rem;
+            color: var(--chalk-dim);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 18px;
+            background: rgba(245, 242, 232, 0.08);
+            border: 1px solid var(--rule);
+            border-radius: 8px;
+            color: var(--chalk);
+            font-family: 'Nunito', sans-serif;
+            font-size: 1rem;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: rgba(245, 242, 232, 0.35);
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: 2px solid var(--yellow);
+            outline-offset: 2px;
+        }
+
+        .hint {
+            font-size: 0.82rem;
+            color: var(--chalk-dim);
+            margin: -12px 0 18px;
+        }
+
+        button {
+            font-family: 'Nunito', sans-serif;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            background: var(--yellow);
+            color: var(--board-dark);
+            border: none;
+            border-radius: 8px;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .progress-text {
+            color: var(--chalk-dim);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--rule);
+            border-radius: 2px;
+            margin-bottom: 22px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--yellow);
+            transition: width 0.3s ease;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            background: transparent;
+            border: 1.5px solid var(--rule);
+            border-radius: 8px;
+            color: var(--chalk);
+            font-size: 1rem;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--yellow);
+        }
+
+        .option-btn.correct {
+            border-color: var(--mint);
+            background: rgba(111, 207, 151, 0.15);
+        }
+
+        .option-btn.wrong {
+            border-color: var(--pink);
+            background: rgba(232, 112, 124, 0.15);
+        }
+
+        .explanation-box {
+            background: rgba(242, 201, 76, 0.1);
+            border-left: 3px solid var(--yellow);
+            border-radius: 6px;
+            padding: 12px 14px;
+            margin: 6px 0 16px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--chalk);
+        }
+
+        .next-btn {
+            margin-top: 6px;
+            background: transparent;
+            border: 1.5px solid var(--yellow);
+            color: var(--yellow);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--chalk-dim);
+            padding: 20px 0;
+        }
+
+        .score-big {
+            font-family: 'Caveat', cursive;
+            font-size: 3.5rem;
+            margin: 4px 0;
+            color: var(--yellow);
+        }
+
+        .error-box {
+            color: var(--pink);
+            font-size: 0.92rem;
+            margin-top: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="slate">
+        <h1>Padhai AI</h1>
+        <p class="tagline">Topic halnus, ya notes paste garnus — AI le quiz banaidincha.</p>
+
+        <div class="card">
+            <div id="setup-screen">
+                <label for="topic-input">Kun topic ma quiz?</label>
+                <input type="text" id="topic-input" placeholder="jastai: Photosynthesis, Nepal ko Itihas">
+
+                <label for="notes-input">Ya, aafno notes/paragraph paste garnus (optional):</label>
+                <textarea id="notes-input"
+                    placeholder="Kitab ko paragraph ya aafno notes yaha paste garnus... (yo bhariyo bhane, maathiको topic use hudaina, yehi text bata matra quiz banincha)"></textarea>
+
+                <label for="count-input">Kati wota prashna?</label>
+                <input type="number" id="count-input" value="5" min="1" max="10">
+
+                <button class="btn-primary" onclick="startQuiz()">Quiz Banau</button>
+                <div id="error-box" class="error-box hidden"></div>
+            </div>
+
+            <div id="loading-screen" class="hidden">
+                <p class="loading">⏳ Grok AI quiz sochdai cha...</p>
+            </div>
+
+            <div id="quiz-screen" class="hidden">
+                <p class="progress-text" id="progress-text"></p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <p class="question-text" id="question-text"></p>
+                <div id="options-area"></div>
+                <div id="explanation-box" class="explanation-box hidden"></div>
+                <button class="next-btn hidden" id="next-btn" onclick="nextQuestion()">Aghi Badhau →</button>
+            </div>
+
+            <div id="result-screen" class="hidden" style="text-align:center;">
+                <p class="tagline" style="margin-bottom:0;">Timro score</p>
+                <p class="score-big" id="score-text"></p>
+                <p class="tagline" id="result-message"></p>
+                <button class="btn-primary" onclick="resetQuiz()">Naya Quiz Khelau</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let questions = [];
+        let currentIndex = 0;
+        let score = 0;
+
+        function show(id) {
+            ['setup-screen', 'loading-screen', 'quiz-screen', 'result-screen'].forEach(s => {
+                document.getElementById(s).classList.toggle('hidden', s !== id);
+            });
+        }
+
+        async function startQuiz() {
+            const topic = document.getElementById('topic-input').value.trim();
+            const notes = document.getElementById('notes-input').value.trim();
+            const count = document.getElementById('count-input').value || 5;
+            const errorBox = document.getElementById('error-box');
+            errorBox.classList.add('hidden');
+
+            if (!topic && !notes) {
+                errorBox.textContent = 'Topic ya notes - kehi ta halnus hai!';
+                errorBox.classList.remove('hidden');
+                return;
+            }
+
+            show('loading-screen');
+
+            try {
+                const res = await fetch('/quiz', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic: topic, notes: notes, sankhya: count })
+                });
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Quiz banauna sakena');
+                }
+
+                questions = data.questions;
+                currentIndex = 0;
+                score = 0;
+                show('quiz-screen');
+                renderQuestion();
+            } catch (err) {
+                show('setup-screen');
+                errorBox.textContent = '⚠️ ' + err.message + ' — API key ra internet check garnus.';
+                errorBox.classList.remove('hidden');
+            }
+        }
+
+        function renderQuestion() {
+            const q = questions[currentIndex];
+            document.getElementById('progress-text').textContent =
+                'Prashna ' + (currentIndex + 1) + ' ko ' + questions.length;
+            document.getElementById('progress-fill').style.width =
+                (currentIndex / questions.length * 100) + '%';
+            document.getElementById('question-text').textContent = q.question;
+
+            const area = document.getElementById('options-area');
+            area.innerHTML = '';
+            Object.keys(q.options).forEach(key => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = key + ') ' + q.options[key];
+                btn.onclick = () => selectAnswer(key, btn);
+                area.appendChild(btn);
+            });
+
+            document.getElementById('explanation-box').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+        }
+
+        function selectAnswer(selectedKey, btnEl) {
+            const q = questions[currentIndex];
+            const allBtns = document.querySelectorAll('.option-btn');
+            allBtns.forEach(b => b.disabled = true);
+
+            if (selectedKey === q.answer) {
+                btnEl.classList.add('correct');
+                score++;
+            } else {
+                btnEl.classList.add('wrong');
+                allBtns.forEach(b => {
+                    if (b.textContent.startsWith(q.answer + ')')) {
+                        b.classList.add('correct');
+                    }
+                });
+            }
+
+            const expBox = document.getElementById('explanation-box');
+            expBox.textContent = '💡 ' + (q.explanation || '');
+            expBox.classList.remove('hidden');
+
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex < questions.length) {
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('progress-fill').style.width = '100%';
+            show('result-screen');
+            document.getElementById('score-text').textContent = score + ' / ' + questions.length;
+
+            let msg = '';
+            const pct = score / questions.length;
+            if (pct === 1) msg = '🎉 Ekdum ramro! Sabai sahi!';
+            else if (pct >= 0.6) msg = '👏 Ramro try! Ali ra practice garau.';
+            else msg = '💪 Thik cha, pheri try garau — practice le perfect banaucha.';
+            document.getElementById('result-message').textContent = msg;
+        }
+
+        function resetQuiz() {
+            document.getElementById('topic-input').value = '';
+            document.getElementById('notes-input').value = '';
+            show('setup-screen');
+        }
+    </script>
+</body>
+
+</html>
